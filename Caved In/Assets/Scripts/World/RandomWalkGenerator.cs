@@ -58,22 +58,22 @@ public class RandomWalkGenerator : MonoBehaviour
                 minCell = Vector2Int.Min(minCell, walker.Position);
                 maxCell = Vector2Int.Max(maxCell, walker.Position);
 
-                if (walker.Steps == config.stepsToTurn)
+                if (walker.Steps == config.stepsToBranch)
                 {
-                    switch (rnd.Next(walkers.Count > 1 ? 3 : 2))
+                    if (i == 0)
                     {
-                        case 0:
-                            walker.ResetStepCounter();
-                            walker.Weights = rnd.PickFromParams(baseWeights, altWeights);
-                            break;
-                        case 1:
-                            walker.ResetStepCounter();
-                            walker.Weights = rnd.PickFromParams(baseWeights, altWeights);
-                            walkers.Add(new Walker(walker.Position, walker.Weights == baseWeights ? altWeights : baseWeights));
-                            break;
-                        case 2:
-                            walkers.RemoveAt(i);
-                            break;
+                        walker.ResetStepCounter();
+                        walker.Weights = rnd.PickFromParams(baseWeights, altWeights);
+
+                        if (rnd.NextDouble() < config.branchChance)
+                        {
+                            var weights = walker.Weights == baseWeights ? altWeights : baseWeights;
+                            walkers.Add(new Walker(walker.Position, weights));
+                        }
+                    }
+                    else
+                    {
+                        walkers.RemoveAt(i);
                     }
                 }
             }
