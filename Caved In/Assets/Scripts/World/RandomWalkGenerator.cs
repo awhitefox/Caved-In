@@ -10,14 +10,18 @@ public class RandomWalkGenerator : MonoBehaviour
     [Range(0, 10)]
     public int[] weights = { 1, 1, 1, 1 };
     public int cells = 8000;
+    public int length = 500;
     public bool instant = false;
     [Range(0, 1)]
     public float stepTime = 0.1f;
     public AvoidanceType avoidance;
+    public LimitBy limitBy;
 
     private Vector2Int currentPos;
     private System.Random random;
     private bool running = false;
+    private Vector2Int minPoint;
+    private Vector2Int maxPoint;
 
     public HashSet<Vector2Int> Map { get; } = new HashSet<Vector2Int>();
 
@@ -43,6 +47,8 @@ public class RandomWalkGenerator : MonoBehaviour
         currentPos = Vector2Int.zero;
         Map.Add(currentPos);
         random = new System.Random(seed);
+        minPoint = Vector2Int.zero;
+        maxPoint = Vector2Int.zero;
 
         running = true;
         StartCoroutine(Walk());
@@ -55,7 +61,7 @@ public class RandomWalkGenerator : MonoBehaviour
 
     private IEnumerator Walk()
     {
-        while (running && (!instant || Map.Count < cells))
+        while (running && CheckLimit())
         {
             IList<Vector2Int> possible;
             switch (avoidance)
@@ -82,6 +88,8 @@ public class RandomWalkGenerator : MonoBehaviour
             }
 
             currentPos = random.PickFrom(possible);
+            minPoint = Vector2Int.Min(minPoint, currentPos);
+            maxPoint = Vector2Int.Max(maxPoint, currentPos);
 
             Map.Add(currentPos);
             Debug.Log(Map.Count);
@@ -97,6 +105,21 @@ public class RandomWalkGenerator : MonoBehaviour
                 }
             }
         }
+    }
+
+    private bool CheckLimit()
+    {
+        if (instant)
+        {
+            switch (limitBy)
+            {
+                case LimitBy.Count:
+                    return Map.Count < cells;
+                case LimitBy.Length:
+                    return (maxPoint - minPoint).sqrMagnitude < length * length;
+            }
+        }
+        return true;
     }
 
     private List<Vector2Int> GetPossibleAny()
@@ -168,5 +191,11 @@ public class RandomWalkGenerator : MonoBehaviour
         None,
         Adjacent,
         Smart
+    }
+
+    public enum LimitBy
+    {
+        Count,
+        Length
     }
 }
