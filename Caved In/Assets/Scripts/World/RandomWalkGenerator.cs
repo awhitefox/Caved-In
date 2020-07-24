@@ -6,15 +6,15 @@ using UnityEngine;
 public class RandomWalkGenerator : MonoBehaviour
 {
     [Min(0)]
-    public int seed = 0;
+    public int seed;
     [Range(0, 10)]
-    public int[] defaultWeights = { 1, 1, 1, 1 };
-    public int cellsToShuffle = 250;
-    public int cells = 8000;
-    public int length = 500;
-    public bool instant = false;
+    public int[] defaultWeights;
+    public int cellsToShuffle;
+    public int cells;
+    public int length;
+    public bool instant;
     [Range(0, 1)]
-    public float stepTime = 0.1f;
+    public float stepTime;
     public AvoidanceType avoidance;
     public LimitBy limitBy;
 
