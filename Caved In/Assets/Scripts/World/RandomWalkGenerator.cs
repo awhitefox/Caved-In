@@ -7,124 +7,160 @@ public class RandomWalkGenerator : MonoBehaviour
 {
     [Min(0)]
     public int seed;
-    [Range(0, 10)]
-    public int[] defaultWeights;
-    public int cellsToShuffle;
+    public RandomWalkConfig config;
+
     public int cells;
     public int length;
     public LimitBy limitBy;
 
-    private Vector2Int currentPos;
-    private System.Random random;
-    private Vector2Int minPoint;
-    private Vector2Int maxPoint;
-    private int shuffles;
-    private int[] weights;
+    private readonly List<Walker> walkers = new List<Walker>();
 
     public HashSet<Vector2Int> Map { get; } = new HashSet<Vector2Int>();
 
+    public enum LimitBy
+    {
+        Count,
+        Length
+    }
+
     private void OnDrawGizmos()
     {
-        if (Map.Count != 0)
+        Gizmos.color = Color.white;
+        foreach (Vector2Int pos in Map)
         {
-            Gizmos.color = Color.white;
-            foreach (Vector2Int pos in Map)
-            {
-                Gizmos.DrawCube((Vector2)pos, Vector3.one);
-            }
-            Gizmos.color = Color.red;
-            Gizmos.DrawCube((Vector2)currentPos, Vector3.one);
+            Gizmos.DrawCube((Vector2)pos, Vector3.one);
         }
     }
 
     public void Generate()
     {
+        var rnd = new System.Random(seed);
+        var minCell = Vector2Int.zero;
+        var maxCell = Vector2Int.zero;
+
+        // TODO Randomly generate this
+        int[] baseWeights = { 3, 3, 2, 2 };
+        int[] altWeights = { 3, 2, 2, 3 };
+
+        walkers.Clear();
+        walkers.Add(new Walker(Vector2Int.zero, baseWeights));
+
         Map.Clear();
-        currentPos = Vector2Int.zero;
-        Map.Add(currentPos);
-        random = new System.Random(seed);
-        minPoint = Vector2Int.zero;
-        maxPoint = Vector2Int.zero;
-        shuffles = 0;
-        weights = (int[])defaultWeights.Clone();
+        Map.Add(Vector2Int.zero);
 
-        Walk();
-    }
-
-    private void Walk()
-    {
-        while (CheckLimit())
+        while (CheckLimit(minCell, maxCell))
         {
-            List<Vector2Int> possible = GetPossible();
-
-            currentPos = random.PickFrom(possible);
-            minPoint = Vector2Int.Min(minPoint, currentPos);
-            maxPoint = Vector2Int.Max(maxPoint, currentPos);
-
-            Map.Add(currentPos);
-            int s = Map.Count / cellsToShuffle;
-            if (s != shuffles)
+            for (int i = walkers.Count - 1; i >= 0; i--)
             {
-                shuffles++;
-                ShuffleWeights();
+                Walker walker = walkers[i];
+                walker.MakeStep(rnd, Map);
+
+                minCell = Vector2Int.Min(minCell, walker.Position);
+                maxCell = Vector2Int.Max(maxCell, walker.Position);
+
+                if (walker.Steps == config.stepsToTurn)
+                {
+                    switch (rnd.Next(walkers.Count > 1 ? 3 : 2))
+                    {
+                        case 0:
+                            walker.ResetStepCounter();
+                            walker.Weights = rnd.PickFromParams(baseWeights, altWeights);
+                            break;
+                        case 1:
+                            walker.ResetStepCounter();
+                            walker.Weights = rnd.PickFromParams(baseWeights, altWeights);
+                            walkers.Add(new Walker(walker.Position, walker.Weights == baseWeights ? altWeights : baseWeights));
+                            break;
+                        case 2:
+                            walkers.RemoveAt(i);
+                            break;
+                    }
+                }
             }
         }
-        Debug.Log(Map.Count);
+
+        walkers.Clear();
     }
 
-    private void ShuffleWeights()
-    {
-        var tmp = weights[3];
-        weights[3] = weights[1];
-        weights[1] = tmp;
-    }
-
-    private bool CheckLimit()
+    private bool CheckLimit(Vector2Int minCell, Vector2Int maxCell)
     {
         switch (limitBy)
         {
             case LimitBy.Count:
                 return Map.Count < cells;
             case LimitBy.Length:
-                return (maxPoint - minPoint).sqrMagnitude < length * length;
+                return (maxCell - minCell).sqrMagnitude < length * length;
         }
         return false;
     }
-    
-    private List<Vector2Int> GetPossible()
-    {
-        var possible = new List<Vector2Int>();
-        Vector2Int[] adjacent = currentPos.GetAdjacent();
 
-        for (int i = 0; i < adjacent.Length; i++)
+    private class Walker
+    {
+        private int[] weights;
+
+        public Vector2Int Position { get; private set; }
+        public int Steps { get; private set; }
+        public int[] Weights
         {
-            Vector2Int adj = adjacent[i];
-            if (!Map.Contains(adj))
+            get => weights;
+            set
             {
-                for (int j = 0; j < weights[i]; j++)
-                {
-                    possible.Add(adj);
-                }
+                if (value is null)
+                    throw new ArgumentNullException(nameof(value));
+                if (value.Length != 4)
+                    throw new ArgumentException(nameof(value));
+                weights = value;
             }
         }
 
-        if (possible.Count == 0)
+        public Walker(Vector2Int pos, int[] weights)
         {
+            Position = pos;
+            Steps = 0;
+            Weights = weights;
+        }
+
+        public void MakeStep(System.Random rnd, HashSet<Vector2Int> map)
+        {
+            Position = rnd.PickFrom(GetPossible(map));
+            Steps++;
+            map.Add(Position);
+        }
+
+        public void ResetStepCounter()
+        {
+            Steps = 0;
+        }
+
+        private List<Vector2Int> GetPossible(HashSet<Vector2Int> map)
+        {
+            var possible = new List<Vector2Int>();
+            Vector2Int[] adjacent = Position.GetAdjacent();
+
             for (int i = 0; i < adjacent.Length; i++)
             {
-                for (int j = 0; j < weights[i]; j++)
+                Vector2Int adj = adjacent[i];
+                if (!map.Contains(adj))
                 {
-                    possible.Add(adjacent[i]);
+                    for (int j = 0; j < weights[i]; j++)
+                    {
+                        possible.Add(adj);
+                    }
                 }
             }
+
+            if (possible.Count == 0)
+            {
+                for (int i = 0; i < adjacent.Length; i++)
+                {
+                    for (int j = 0; j < weights[i]; j++)
+                    {
+                        possible.Add(adjacent[i]);
+                    }
+                }
+            }
+
+            return possible;
         }
-
-        return possible;
-    }
-
-    public enum LimitBy
-    {
-        Count,
-        Length
     }
 }
