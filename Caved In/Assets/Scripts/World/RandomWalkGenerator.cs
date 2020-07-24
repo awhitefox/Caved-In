@@ -8,7 +8,8 @@ public class RandomWalkGenerator : MonoBehaviour
     [Min(0)]
     public int seed = 0;
     [Range(0, 10)]
-    public int[] weights = { 1, 1, 1, 1 };
+    public int[] defaultWeights = { 1, 1, 1, 1 };
+    public int cellsToShuffle = 250;
     public int cells = 8000;
     public int length = 500;
     public bool instant = false;
@@ -22,6 +23,8 @@ public class RandomWalkGenerator : MonoBehaviour
     private bool running = false;
     private Vector2Int minPoint;
     private Vector2Int maxPoint;
+    private int shuffles;
+    private int[] weights;
 
     public HashSet<Vector2Int> Map { get; } = new HashSet<Vector2Int>();
 
@@ -49,6 +52,8 @@ public class RandomWalkGenerator : MonoBehaviour
         random = new System.Random(seed);
         minPoint = Vector2Int.zero;
         maxPoint = Vector2Int.zero;
+        shuffles = 0;
+        weights = (int[])defaultWeights.Clone();
 
         running = true;
         StartCoroutine(Walk());
@@ -92,6 +97,13 @@ public class RandomWalkGenerator : MonoBehaviour
             maxPoint = Vector2Int.Max(maxPoint, currentPos);
 
             Map.Add(currentPos);
+            int s = Map.Count / cellsToShuffle;
+            if (s != shuffles)
+            {
+                shuffles++;
+                ShuffleWeights();
+            }
+
             Debug.Log(Map.Count);
             if (!instant)
             {
@@ -107,19 +119,23 @@ public class RandomWalkGenerator : MonoBehaviour
         }
     }
 
+    private void ShuffleWeights()
+    {
+        var tmp = weights[3];
+        weights[3] = weights[1];
+        weights[1] = tmp;
+    }
+
     private bool CheckLimit()
     {
-        if (instant)
+        switch (limitBy)
         {
-            switch (limitBy)
-            {
-                case LimitBy.Count:
-                    return Map.Count < cells;
-                case LimitBy.Length:
-                    return (maxPoint - minPoint).sqrMagnitude < length * length;
-            }
+            case LimitBy.Count:
+                return Map.Count < cells;
+            case LimitBy.Length:
+                return (maxPoint - minPoint).sqrMagnitude < length * length;
         }
-        return true;
+        return false;
     }
 
     private List<Vector2Int> GetPossibleAny()
