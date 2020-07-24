@@ -14,18 +14,14 @@ public class RandomWalkGeneratorEditor : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        if (GUILayout.Button("Start"))
+        if (GUILayout.Button("Generate"))
         {
-            gen.StartWalking();
+            gen.Generate();
         }
-        if (GUILayout.Button("Randomize & Start"))
+        if (GUILayout.Button("Randomize & Generate"))
         {
             gen.seed = UnityEngine.Random.Range(0, int.MaxValue);
-            gen.StartWalking();
-        }
-        if (GUILayout.Button("Stop"))
-        {
-            gen.StopWalking();
+            gen.Generate();
         }
     }
 }

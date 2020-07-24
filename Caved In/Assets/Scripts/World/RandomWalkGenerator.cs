@@ -12,15 +12,10 @@ public class RandomWalkGenerator : MonoBehaviour
     public int cellsToShuffle;
     public int cells;
     public int length;
-    public bool instant;
-    [Range(0, 1)]
-    public float stepTime;
-    public AvoidanceType avoidance;
     public LimitBy limitBy;
 
     private Vector2Int currentPos;
     private System.Random random;
-    private bool running = false;
     private Vector2Int minPoint;
     private Vector2Int maxPoint;
     private int shuffles;
@@ -42,10 +37,8 @@ public class RandomWalkGenerator : MonoBehaviour
         }
     }
 
-    public void StartWalking()
+    public void Generate()
     {
-        StopWalking();
-
         Map.Clear();
         currentPos = Vector2Int.zero;
         Map.Add(currentPos);
@@ -55,42 +48,14 @@ public class RandomWalkGenerator : MonoBehaviour
         shuffles = 0;
         weights = (int[])defaultWeights.Clone();
 
-        running = true;
-        StartCoroutine(Walk());
+        Walk();
     }
 
-    public void StopWalking()
+    private void Walk()
     {
-        running = false;
-    }
-
-    private IEnumerator Walk()
-    {
-        while (running && CheckLimit())
+        while (CheckLimit())
         {
-            IList<Vector2Int> possible;
-            switch (avoidance)
-            {
-                case AvoidanceType.None:
-                    possible = GetPossibleAny();
-                    break;
-                case AvoidanceType.Adjacent:
-                    possible = GetPossibleAdjacent();
-                    if (possible.Count == 0)
-                    {
-                        goto case AvoidanceType.None;
-                    }
-                    break;
-                case AvoidanceType.Smart:
-                    possible = GetPossibleSmart();
-                    if (possible.Count == 0)
-                    {
-                        goto case AvoidanceType.None;
-                    }
-                    break;
-                default:
-                    throw new ArgumentException(nameof(avoidance));
-            }
+            List<Vector2Int> possible = GetPossible();
 
             currentPos = random.PickFrom(possible);
             minPoint = Vector2Int.Min(minPoint, currentPos);
@@ -103,20 +68,8 @@ public class RandomWalkGenerator : MonoBehaviour
                 shuffles++;
                 ShuffleWeights();
             }
-
-            Debug.Log(Map.Count);
-            if (!instant)
-            {
-                if (stepTime != 0)
-                {
-                    yield return new WaitForSeconds(stepTime);
-                }
-                else
-                {
-                    yield return new WaitForEndOfFrame();
-                }
-            }
         }
+        Debug.Log(Map.Count);
     }
 
     private void ShuffleWeights()
@@ -137,25 +90,12 @@ public class RandomWalkGenerator : MonoBehaviour
         }
         return false;
     }
-
-    private List<Vector2Int> GetPossibleAny()
-    {
-        var possible = new List<Vector2Int>();
-        Vector2Int[] adjacent = currentPos.GetAdjacent();
-        for (int i = 0; i < adjacent.Length; i++)
-        {
-            for (int j = 0; j < weights[i]; j++)
-            {
-                possible.Add(adjacent[i]);
-            }
-        }
-        return possible;
-    }
     
-    private List<Vector2Int> GetPossibleAdjacent()
+    private List<Vector2Int> GetPossible()
     {
         var possible = new List<Vector2Int>();
         Vector2Int[] adjacent = currentPos.GetAdjacent();
+
         for (int i = 0; i < adjacent.Length; i++)
         {
             Vector2Int adj = adjacent[i];
@@ -167,46 +107,19 @@ public class RandomWalkGenerator : MonoBehaviour
                 }
             }
         }
-        return possible;
-    }
 
-    private List<Vector2Int> GetPossibleSmart()
-    {
-        var possible = new List<Vector2Int>();
-
-        Vector2Int[] adjacent = currentPos.GetAdjacent();
-        for (int i = 0; i < adjacent.Length; i++)
+        if (possible.Count == 0)
         {
-            Vector2Int adj = adjacent[i];
-            if (!Map.Contains(adj))
+            for (int i = 0; i < adjacent.Length; i++)
             {
-                bool flag = true;
-                foreach (var adj2 in adj.GetAdjacent())
+                for (int j = 0; j < weights[i]; j++)
                 {
-                    if (adj2 != currentPos && Map.Contains(adj2))
-                    {
-                        flag = false;
-                        break;
-                    }
-                }
-                if (flag)
-                {
-                    for (int j = 0; j < weights[i]; j++)
-                    {
-                        possible.Add(adj);
-                    }
+                    possible.Add(adjacent[i]);
                 }
             }
         }
 
         return possible;
-    }
-
-    public enum AvoidanceType
-    {
-        None,
-        Adjacent,
-        Smart
     }
 
     public enum LimitBy
