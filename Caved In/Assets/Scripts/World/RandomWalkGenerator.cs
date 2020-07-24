@@ -13,8 +13,6 @@ public class RandomWalkGenerator : MonoBehaviour
     public int length;
     public LimitBy limitBy;
 
-    private readonly List<Walker> walkers = new List<Walker>();
-
     public HashSet<Vector2Int> Map { get; } = new HashSet<Vector2Int>();
 
     public enum LimitBy
@@ -42,8 +40,10 @@ public class RandomWalkGenerator : MonoBehaviour
         int[] baseWeights = { 3, 3, 2, 2 };
         int[] altWeights = { 3, 2, 2, 3 };
 
-        walkers.Clear();
-        walkers.Add(new Walker(Vector2Int.zero, baseWeights));
+        var walkers = new List<Walker>()
+        {
+            new Walker(Vector2Int.zero, baseWeights)
+        };
 
         Map.Clear();
         Map.Add(Vector2Int.zero);
@@ -78,8 +78,6 @@ public class RandomWalkGenerator : MonoBehaviour
                 }
             }
         }
-
-        walkers.Clear();
     }
 
     private bool CheckLimit(Vector2Int minCell, Vector2Int maxCell)
