@@ -22,9 +22,6 @@ public class RandomWalkGenerator : MonoBehaviour
     public void Generate()
     {
         var random = new System.Random(seed);
-        var minCell = Vector2Int.zero;
-        var maxCell = Vector2Int.zero;
-
         int mainDirection = random.Next(4);
 
         int[] baseWeights = new int[4];
@@ -61,9 +58,6 @@ public class RandomWalkGenerator : MonoBehaviour
             {
                 Walker walker = walkers[i];
                 walker.MakeStep(random, Map);
-
-                minCell = Vector2Int.Min(minCell, walker.Position);
-                maxCell = Vector2Int.Max(maxCell, walker.Position);
 
                 if (walker.Steps == config.stepsToBranch)
                 {
