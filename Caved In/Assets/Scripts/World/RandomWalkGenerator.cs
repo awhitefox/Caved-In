@@ -8,17 +8,7 @@ public class RandomWalkGenerator : MonoBehaviour
     public int seed;
     public RandomWalkConfig config;
 
-    public int cells;
-    public int length;
-    public LimitBy limitBy;
-
     public HashSet<Vector2Int> Map { get; } = new HashSet<Vector2Int>();
-
-    public enum LimitBy
-    {
-        Count,
-        Length
-    }
 
     private void OnDrawGizmos()
     {
@@ -65,7 +55,7 @@ public class RandomWalkGenerator : MonoBehaviour
         Map.Add(Vector2Int.zero);
 
         Debug.Log($"Starting world generation. Seed: {seed}");
-        while (CheckLimit(minCell, maxCell))
+        while (Map.Count + walkers.Count <= config.cellsLimit)
         {
             for (int i = walkers.Count - 1; i >= 0; i--)
             {
@@ -96,18 +86,6 @@ public class RandomWalkGenerator : MonoBehaviour
             }
         }
         Debug.Log($"World generataed. Cells: {Map.Count}");
-    }
-
-    private bool CheckLimit(Vector2Int minCell, Vector2Int maxCell)
-    {
-        switch (limitBy)
-        {
-            case LimitBy.Count:
-                return Map.Count < cells;
-            case LimitBy.Length:
-                return (maxCell - minCell).sqrMagnitude < length * length;
-        }
-        return false;
     }
 
     private class Walker
