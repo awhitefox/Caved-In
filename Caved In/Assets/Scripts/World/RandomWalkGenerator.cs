@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,18 +35,36 @@ public class RandomWalkGenerator : MonoBehaviour
         var minCell = Vector2Int.zero;
         var maxCell = Vector2Int.zero;
 
-        // TODO Randomly generate this
-        int[] baseWeights = { 3, 3, 2, 2 };
-        int[] altWeights = { 3, 2, 2, 3 };
+        int mainDirection = rnd.Next(4);
+
+        int[] baseWeights = new int[4];
+        int[] altWeights = new int[4];
+        for (int i = 0; i < 4; i++)
+        {
+            int value;
+            if (i == mainDirection)
+            {
+                value = config.increasedWeight;
+            }
+            else
+            {
+                value = config.baseWeight;
+            }
+            baseWeights[i] = value;
+            altWeights[i] = value;
+        }
+        baseWeights[(mainDirection + 5) % 4] = config.increasedWeight;
+        altWeights[(mainDirection + 3) % 4] = config.increasedWeight;
 
         var walkers = new List<Walker>()
         {
-            new Walker(Vector2Int.zero, baseWeights)
+            new Walker(Vector2Int.zero, rnd.PickFromParams(baseWeights, altWeights))
         };
 
         Map.Clear();
         Map.Add(Vector2Int.zero);
 
+        Debug.Log($"Starting world generation. Seed: {seed}");
         while (CheckLimit(minCell, maxCell))
         {
             for (int i = walkers.Count - 1; i >= 0; i--)
@@ -78,6 +95,7 @@ public class RandomWalkGenerator : MonoBehaviour
                 }
             }
         }
+        Debug.Log($"World generataed. Cells: {Map.Count}");
     }
 
     private bool CheckLimit(Vector2Int minCell, Vector2Int maxCell)
