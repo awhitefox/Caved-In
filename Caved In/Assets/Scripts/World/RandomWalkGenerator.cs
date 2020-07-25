@@ -21,11 +21,11 @@ public class RandomWalkGenerator : MonoBehaviour
 
     public void Generate()
     {
-        var rnd = new System.Random(seed);
+        var random = new System.Random(seed);
         var minCell = Vector2Int.zero;
         var maxCell = Vector2Int.zero;
 
-        int mainDirection = rnd.Next(4);
+        int mainDirection = random.Next(4);
 
         int[] baseWeights = new int[4];
         int[] altWeights = new int[4];
@@ -48,7 +48,7 @@ public class RandomWalkGenerator : MonoBehaviour
 
         var walkers = new List<Walker>()
         {
-            new Walker(Vector2Int.zero, rnd.PickFromParams(baseWeights, altWeights))
+            new Walker(Vector2Int.zero, random.PickFromParams(baseWeights, altWeights))
         };
 
         Map.Clear();
@@ -60,7 +60,7 @@ public class RandomWalkGenerator : MonoBehaviour
             for (int i = walkers.Count - 1; i >= 0; i--)
             {
                 Walker walker = walkers[i];
-                walker.MakeStep(rnd, Map);
+                walker.MakeStep(random, Map);
 
                 minCell = Vector2Int.Min(minCell, walker.Position);
                 maxCell = Vector2Int.Max(maxCell, walker.Position);
@@ -70,9 +70,9 @@ public class RandomWalkGenerator : MonoBehaviour
                     if (i == 0)
                     {
                         walker.ResetStepCounter();
-                        walker.Weights = rnd.PickFromParams(baseWeights, altWeights);
+                        walker.Weights = random.PickFromParams(baseWeights, altWeights);
 
-                        if (rnd.NextDouble() < config.branchChance)
+                        if (random.NextDouble() < config.branchChance)
                         {
                             var weights = walker.Weights == baseWeights ? altWeights : baseWeights;
                             walkers.Add(new Walker(walker.Position, weights));
@@ -114,9 +114,9 @@ public class RandomWalkGenerator : MonoBehaviour
             Weights = weights;
         }
 
-        public void MakeStep(System.Random rnd, HashSet<Vector2Int> map)
+        public void MakeStep(System.Random random, HashSet<Vector2Int> map)
         {
-            Position = rnd.PickFrom(GetPossible(map));
+            Position = random.PickFrom(GetPossible(map));
             Steps++;
             map.Add(Position);
         }
