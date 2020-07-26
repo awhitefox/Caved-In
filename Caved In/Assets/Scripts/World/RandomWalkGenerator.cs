@@ -8,12 +8,12 @@ public class RandomWalkGenerator : MonoBehaviour
     public int seed;
     public RandomWalkConfig config;
 
-    public HashSet<Vector2Int> Map { get; } = new HashSet<Vector2Int>();
+    public Dictionary<Vector2Int, TileType> Map { get; } = new Dictionary<Vector2Int, TileType>();
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.white;
-        foreach (Vector2Int pos in Map)
+        foreach (Vector2Int pos in Map.Keys)
         {
             Gizmos.DrawCube((Vector2)pos, Vector3.one);
         }
@@ -49,7 +49,7 @@ public class RandomWalkGenerator : MonoBehaviour
         };
 
         Map.Clear();
-        Map.Add(Vector2Int.zero);
+        Map[Vector2Int.zero] = TileType.Ground;
 
         Debug.Log($"Starting world generation. Seed: {seed}");
         while (Map.Count + walkers.Count <= config.cellsLimit)
@@ -108,11 +108,11 @@ public class RandomWalkGenerator : MonoBehaviour
             Weights = weights;
         }
 
-        public void MakeStep(System.Random random, HashSet<Vector2Int> map)
+        public void MakeStep(System.Random random, Dictionary<Vector2Int, TileType> map)
         {
             Position = random.PickFrom(GetPossible(map));
             Steps++;
-            map.Add(Position);
+            map[Position] = TileType.Ground;
         }
 
         public void ResetStepCounter()
@@ -120,7 +120,7 @@ public class RandomWalkGenerator : MonoBehaviour
             Steps = 0;
         }
 
-        private List<Vector2Int> GetPossible(HashSet<Vector2Int> map)
+        private List<Vector2Int> GetPossible(Dictionary<Vector2Int, TileType> map)
         {
             var possible = new List<Vector2Int>();
             Vector2Int[] adjacent = Position.GetAdjacent();
@@ -128,7 +128,7 @@ public class RandomWalkGenerator : MonoBehaviour
             for (int i = 0; i < adjacent.Length; i++)
             {
                 Vector2Int adj = adjacent[i];
-                if (!map.Contains(adj))
+                if (!map.ContainsKey(adj))
                 {
                     for (int j = 0; j < weights[i]; j++)
                     {
