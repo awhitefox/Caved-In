@@ -1,14 +1,14 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(RandomWalkGenerator))]
-public class RandomWalkGeneratorEditor : Editor
+[CustomEditor(typeof(CaveGenerator))]
+public class CaveGeneratorEditor : Editor
 {
-    private RandomWalkGenerator gen;
+    private CaveGenerator gen;
 
     private void OnEnable()
     {
-        gen = (RandomWalkGenerator)target;
+        gen = (CaveGenerator)target;
     }
 
     public override void OnInspectorGUI()

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RandomWalkGenerator : MonoBehaviour
+public class CaveGenerator : MonoBehaviour
 {
     [Min(0)]
     public int seed;
