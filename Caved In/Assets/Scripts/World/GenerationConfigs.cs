@@ -18,9 +18,7 @@ public static class GenerationConfigs
     {
         string path = Path.Combine(configsPath, $"{configName}.json");
         if (!File.Exists(path))
-        {
             throw new ArgumentException(nameof(configName));
-        }
         return JsonUtility.FromJson<GenerationConfig>(File.ReadAllText(path));
     }
 }
