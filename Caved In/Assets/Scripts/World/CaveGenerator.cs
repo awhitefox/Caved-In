@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = System.Random;
 
 public class CaveGenerator : MonoBehaviour
 {
-    [Min(0)]
-    public int seed;
-    public RandomWalkConfig config;
-
+    public int? CurrentSeed { get; private set; }
+    public GenerationConfig CurrentConfig { get; private set; }
     public Dictionary<Vector2Int, TileType> Map { get; } = new Dictionary<Vector2Int, TileType>();
 
     private void OnDrawGizmos()
@@ -19,9 +18,24 @@ public class CaveGenerator : MonoBehaviour
         }
     }
 
-    public void Generate()
+    public void Generate(int seed, GenerationConfig config)
     {
-        var random = new System.Random(seed);
+        if (seed < 0)
+            throw new ArgumentOutOfRangeException(nameof(seed));
+
+        Debug.Log($"Starting world generation. Seed: {seed}");
+
+        var random = new Random(seed);
+        PerformRandomWalk(random, config);
+
+        CurrentSeed = seed;
+        CurrentConfig = config;
+
+        Debug.Log($"World generataed. Cells: {Map.Count}");
+    }
+
+    private void PerformRandomWalk(Random random, GenerationConfig config)
+    {
         int mainDirection = random.Next(4);
 
         int[] baseWeights = new int[4];
@@ -50,8 +64,7 @@ public class CaveGenerator : MonoBehaviour
 
         Map.Clear();
         Map[Vector2Int.zero] = TileType.Ground;
-
-        Debug.Log($"Starting world generation. Seed: {seed}");
+ 
         while (Map.Count + walkers.Count <= config.cellsLimit)
         {
             for (int i = walkers.Count - 1; i >= 0; i--)
@@ -79,7 +92,6 @@ public class CaveGenerator : MonoBehaviour
                 }
             }
         }
-        Debug.Log($"World generataed. Cells: {Map.Count}");
     }
 
     private class Walker

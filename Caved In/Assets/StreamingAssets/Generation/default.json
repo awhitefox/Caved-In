@@ -1,0 +1,7 @@
+{
+    "cellsLimit": 12000,
+    "baseWeight": 2,
+    "increasedWeight": 3,
+    "stepsToBranch": 750,
+    "branchChance": 1.0
+}
