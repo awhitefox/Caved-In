@@ -29,7 +29,7 @@ public class Map : MonoBehaviour, IEnumerable<Vector2Int>
                     Gizmos.color = Color.grey;
                     break;
             }
-            Gizmos.DrawCube((Vector2)pos, Vector3.one);
+            Gizmos.DrawCube(new Vector3(pos.x + .5f, pos.y + .5f, 0), Vector3.one);
         }
     }
 
