@@ -136,14 +136,14 @@ public class MapGenerator : MonoBehaviour
         foreach (Vector2Int pos in map)
         {
             int mask = 0;
-            mask += map.ContainsTileAt(pos + Vector2Int.up) ? 1 : 0;
-            mask += map.ContainsTileAt(pos + Vector2Int.up + Vector2Int.right) ? 2 : 0;
-            mask += map.ContainsTileAt(pos + Vector2Int.right) ? 4 : 0;
-            mask += map.ContainsTileAt(pos + Vector2Int.down + Vector2Int.right) ? 8 : 0;
-            mask += map.ContainsTileAt(pos + Vector2Int.down) ? 16 : 0;
-            mask += map.ContainsTileAt(pos + Vector2Int.down + Vector2Int.left) ? 32 : 0;
-            mask += map.ContainsTileAt(pos + Vector2Int.left) ? 64 : 0;
-            mask += map.ContainsTileAt(pos + Vector2Int.up + Vector2Int.left) ? 128 : 0;
+            mask += map.ContainsTileAt(new Vector2Int(pos.x, pos.y + 1)) ? 1 : 0;
+            mask += map.ContainsTileAt(new Vector2Int(pos.x + 1, pos.y + 1)) ? 2 : 0;
+            mask += map.ContainsTileAt(new Vector2Int(pos.x + 1, pos.y)) ? 4 : 0;
+            mask += map.ContainsTileAt(new Vector2Int(pos.x + 1, pos.y - 1)) ? 8 : 0;
+            mask += map.ContainsTileAt(new Vector2Int(pos.x, pos.y - 1)) ? 16 : 0;
+            mask += map.ContainsTileAt(new Vector2Int(pos.x - 1, pos.y - 1)) ? 32 : 0;
+            mask += map.ContainsTileAt(new Vector2Int(pos.x - 1, pos.y)) ? 64 : 0;
+            mask += map.ContainsTileAt(new Vector2Int(pos.x - 1, pos.y + 1)) ? 128 : 0;
             if (smoothingMasks.Contains(mask))
             {
                 tilesToRemove.Add(pos);
