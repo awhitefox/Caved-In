@@ -5,10 +5,7 @@ public class Map : MonoBehaviour
 {
     private Dictionary<Vector2Int, TileType> dict;
 
-    public int Top { get; private set; }
-    public int Right { get; private set; }
-    public int Bottom { get; private set; }
-    public int Left { get; private set; }
+    public int TileCount => dict.Count;
 
     private void Awake()
     {
@@ -29,24 +26,9 @@ public class Map : MonoBehaviour
 
     public TileType GetTile(Vector2Int pos) => dict[pos];
 
-    public void SetTile(Vector2Int pos, TileType value)
-    {
-        dict[pos] = value;
-        if (pos.x > Right)
-            Right = pos.x;
-        if (pos.x < Left)
-            Left = pos.y;
-        if (pos.y > Top)
-            Top = pos.y;
-        if (pos.y < Bottom)
-            Bottom = pos.y;
-    }
+    public void SetTile(Vector2Int pos, TileType value) => dict[pos] = value;
 
     public bool ContainsTileAt(Vector2Int pos) => dict.ContainsKey(pos);
 
-    public void Clear()
-    {
-        dict.Clear();
-        Top = Right = Bottom = Left = 0;
-    }
+    public void Clear() => dict.Clear();
 }
