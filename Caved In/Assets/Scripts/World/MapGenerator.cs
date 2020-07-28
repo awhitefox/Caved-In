@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = System.Random;
 
-public class CaveGenerator : MonoBehaviour
+public class MapGenerator : MonoBehaviour
 {
     public int? CurrentSeed { get; private set; }
     public GenerationConfig CurrentConfig { get; private set; }

@@ -2,10 +2,10 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(CaveGenerator))]
-public class CaveGeneratorEditor : Editor
+[CustomEditor(typeof(MapGenerator))]
+public class MapGeneratorEditor : Editor
 {
-    private CaveGenerator gen;
+    private MapGenerator gen;
     private bool manualGeneration;
     private bool useRandomSeed;
     private int seed;
@@ -14,7 +14,7 @@ public class CaveGeneratorEditor : Editor
 
     private void OnEnable()
     {
-        gen = (CaveGenerator)target;
+        gen = (MapGenerator)target;
         useRandomSeed = true;
     }
 
