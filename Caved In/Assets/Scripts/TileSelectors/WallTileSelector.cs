@@ -51,12 +51,12 @@ public class WallTileSelector : TileSelectorBase
         cornerMask += map.TryGetTile(new Vector2Int(pos.x - 1, pos.y - 1), out tile) && tile != TileType.Wall ? 8 : 0;
         switch (cornerMask)
         {
-            case 1: return wallCornerInnerNW;
-            case 2: return wallCornerInnerNE;
-            case 4: return wallCornerInnerSE;
-            case 8: return wallCornerInnerSW;
-            case 5: return wallCornerOuterDoubleWE;
-            case 10: return wallCornerOuterDoubleEW;
+            case 1: return wallCornerOuterSE;
+            case 2: return wallCornerOuterSW;
+            case 4: return wallCornerOuterNW;
+            case 8: return wallCornerOuterNE;
+            case 5: return wallCornerOuterDoubleEW;
+            case 10: return wallCornerOuterDoubleWE;
             default: throw new ArgumentException("Impossible wall position", nameof(map));
         }
     }
