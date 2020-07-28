@@ -35,6 +35,8 @@ public class Map : MonoBehaviour, IEnumerable<Vector2Int>
 
     public TileType GetTile(Vector2Int pos) => dict[pos];
 
+    public bool TryGetTile(Vector2Int pos, out TileType tile) => dict.TryGetValue(pos, out tile); 
+
     public void SetTile(Vector2Int pos, TileType value) => dict[pos] = value;
 
     public bool RemoveTileAt(Vector2Int pos) => dict.Remove(pos);
