@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Map : MonoBehaviour
+public class Map : MonoBehaviour, IEnumerable<Vector2Int>
 {
     private Dictionary<Vector2Int, TileType> dict;
 
@@ -28,7 +29,13 @@ public class Map : MonoBehaviour
 
     public void SetTile(Vector2Int pos, TileType value) => dict[pos] = value;
 
+    public bool RemoveTileAt(Vector2Int pos) => dict.Remove(pos);
+
     public bool ContainsTileAt(Vector2Int pos) => dict.ContainsKey(pos);
 
     public void Clear() => dict.Clear();
+
+    IEnumerator<Vector2Int> IEnumerable<Vector2Int>.GetEnumerator() => dict.Keys.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => dict.Keys.GetEnumerator();
 }

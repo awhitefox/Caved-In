@@ -10,6 +10,7 @@ public class MapGenerator : MonoBehaviour
 {
     // TODO Move this somewhere else
     private static readonly int[] possibleWallMasks = new[] { 3, 6, 9, 12, 7, 11, 13, 14, 15 };
+    private static readonly int[] smoothingMasks = new[] { 7, 28, 112, 193 };
 
     private Map map;
 
@@ -31,6 +32,7 @@ public class MapGenerator : MonoBehaviour
 
         PerformRandomWalk(random, config);
         FixTiles(config);
+        SmoothTiles();
 
         CurrentSeed = seed;
         CurrentConfig = config;
@@ -112,7 +114,7 @@ public class MapGenerator : MonoBehaviour
             i++;
             foreach (var adj in pos.GetAdjacent())
             {
-                if (!map.ContainsTileAt(adj) && !CheckTile(adj) && !tilesToFix.Contains(adj))
+                if (!map.ContainsTileAt(adj) && CheckIfTileNeedsFix(adj) && !tilesToFix.Contains(adj))
                 {
                     tilesToFix.Enqueue(adj);
                 }
@@ -125,6 +127,31 @@ public class MapGenerator : MonoBehaviour
         }
         sw.Stop();
         Debug.Log($"Tile fixing completed in {sw.ElapsedMilliseconds} ms, {i} tiles placed.");
+    }
+
+    private void SmoothTiles()
+    {
+        var tilesToRemove = new HashSet<Vector2Int>();
+        foreach (Vector2Int pos in map)
+        {
+            int mask = 0;
+            mask += map.ContainsTileAt(pos + Vector2Int.up) ? 1 : 0;
+            mask += map.ContainsTileAt(pos + Vector2Int.up + Vector2Int.right) ? 2 : 0;
+            mask += map.ContainsTileAt(pos + Vector2Int.right) ? 4 : 0;
+            mask += map.ContainsTileAt(pos + Vector2Int.down + Vector2Int.right) ? 8 : 0;
+            mask += map.ContainsTileAt(pos + Vector2Int.down) ? 16 : 0;
+            mask += map.ContainsTileAt(pos + Vector2Int.down + Vector2Int.left) ? 32 : 0;
+            mask += map.ContainsTileAt(pos + Vector2Int.left) ? 64 : 0;
+            mask += map.ContainsTileAt(pos + Vector2Int.up + Vector2Int.left) ? 128 : 0;
+            if (smoothingMasks.Contains(mask))
+            {
+                tilesToRemove.Add(pos);
+            }
+        }
+        foreach (Vector2Int pos in tilesToRemove)
+        {
+            map.RemoveTileAt(pos);
+        }
     }
 
     private Queue<Vector2Int> GetTilesToFix()
@@ -149,7 +176,7 @@ public class MapGenerator : MonoBehaviour
                 {
                     scanQueue.Enqueue(adj);
                 }
-                else if (!CheckTile(adj))
+                else if (CheckIfTileNeedsFix(adj))
                 {
                     tilesToFix.Enqueue(adj);
                 }
@@ -158,14 +185,14 @@ public class MapGenerator : MonoBehaviour
         return tilesToFix;
     }
 
-    private bool CheckTile(Vector2Int pos)
+    private bool CheckIfTileNeedsFix(Vector2Int pos)
     {
         int mask = 0;
         mask += !map.ContainsTileAt(pos + Vector2Int.up) ? 1 : 0;
         mask += !map.ContainsTileAt(pos + Vector2Int.right) ? 2 : 0;
         mask += !map.ContainsTileAt(pos + Vector2Int.down) ? 4 : 0;
         mask += !map.ContainsTileAt(pos + Vector2Int.left) ? 8 : 0;
-        return mask == 15 || possibleWallMasks.Contains(mask);
+        return mask != 15 && !possibleWallMasks.Contains(mask);
     }
 
     private class Walker
