@@ -18,9 +18,17 @@ public class Map : MonoBehaviour, IEnumerable<Vector2Int>
         if (dict is null)
             return;
 
-        Gizmos.color = Color.white;
         foreach (Vector2Int pos in dict.Keys)
         {
+            switch (dict[pos])
+            {
+                case TileType.Ground:
+                    Gizmos.color = Color.white;
+                    break;
+                case TileType.Wall:
+                    Gizmos.color = Color.grey;
+                    break;
+            }
             Gizmos.DrawCube((Vector2)pos, Vector3.one);
         }
     }

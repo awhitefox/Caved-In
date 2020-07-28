@@ -9,7 +9,7 @@ using Stopwatch = System.Diagnostics.Stopwatch;
 public class MapGenerator : MonoBehaviour
 {
     // TODO Move this somewhere else
-    private static readonly int[] possibleWallMasks = new[] { 3, 6, 9, 12, 7, 11, 13, 14, 15 };
+    private static readonly int[] possibleWallMasks = new[] { 3, 6, 9, 12, 7, 11, 13, 14 };
     private static readonly int[] smoothingMasks = new[] { 7, 28, 112, 193 };
 
     private Map map;
@@ -33,6 +33,7 @@ public class MapGenerator : MonoBehaviour
         PerformRandomWalk(random, config);
         FixTiles(config);
         SmoothTiles();
+        PlaceWalls();
 
         CurrentSeed = seed;
         CurrentConfig = config;
@@ -154,6 +155,29 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    private void PlaceWalls()
+    {
+        var tilesToAdd = new HashSet<Vector2Int>();
+        foreach (Vector2Int pos in map)
+        {
+            for (int y = pos.y - 1; y <= pos.y + 1; y++)
+            {
+                for (int x = pos.x - 1; x <= pos.x + 1; x++)
+                {
+                    var neighbourPos = new Vector2Int(x, y);
+                    if (!map.ContainsTileAt(neighbourPos))
+                    {
+                        tilesToAdd.Add(neighbourPos);
+                    }
+                }
+            }
+        }
+        foreach (Vector2Int pos in tilesToAdd)
+        {
+            map.SetTile(pos, TileType.Wall);
+        }
+    }
+
     private Queue<Vector2Int> GetTilesToFix()
     {
         var tilesToFix = new Queue<Vector2Int>();
@@ -192,7 +216,7 @@ public class MapGenerator : MonoBehaviour
         mask += !map.ContainsTileAt(pos + Vector2Int.right) ? 2 : 0;
         mask += !map.ContainsTileAt(pos + Vector2Int.down) ? 4 : 0;
         mask += !map.ContainsTileAt(pos + Vector2Int.left) ? 8 : 0;
-        return mask != 15 && !possibleWallMasks.Contains(mask);
+        return !possibleWallMasks.Contains(mask);
     }
 
     private class Walker
