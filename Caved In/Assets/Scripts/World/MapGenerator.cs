@@ -22,6 +22,11 @@ public class MapGenerator : MonoBehaviour
         map = GetComponent<Map>();
     }
 
+    private void Start()
+    {
+        Generate(Environment.TickCount, GenerationConfigs.Load("default")); // FIXME
+    }
+
     public void Generate(int seed, GenerationConfig config)
     {
         if (seed < 0)
